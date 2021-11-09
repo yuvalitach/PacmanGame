@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".Activity_panel">
 
     <ImageView
         android:id="@+id/panel_IMG_background"
@@ -37,7 +37,6 @@
                 android:id="@+id/panel_IMG_heart2"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_alignTop="@id/panel_IMG_heart1"
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@id/panel_IMG_heart1"
                 android:src="@drawable/heart" />
@@ -46,7 +45,6 @@
                 android:id="@+id/panel_IMG_heart3"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_alignTop="@id/panel_IMG_heart1"
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@id/panel_IMG_heart2"
                 android:src="@drawable/heart" />

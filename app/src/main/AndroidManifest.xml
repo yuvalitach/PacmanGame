@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PacmanGame">
         <activity
-            android:name=".MainActivity"
+            android:name=".Activity_panel"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +23,7 @@
         </activity>
 
         <activity
-            android:name=".gameOverPanel"
+            android:name=".Game_over_panel"
             android:screenOrientation="portrait" />
 
     </application>

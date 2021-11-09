@@ -24,7 +24,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity {
+public class Activity_panel extends AppCompatActivity {
 
     final int DELAY = 500;
 
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView panel_LBL_score;
     private MediaPlayer music_beginning, eat_fruit_music, eat_ghost_music;
     private Animation animation;
+    private Toast mToastToShow;
     Timer timer;
 
     @Override
@@ -47,10 +48,11 @@ public class MainActivity extends AppCompatActivity {
 
         findViews();
         timer = new Timer();
-        music_beginning = MediaPlayer.create(MainActivity.this, R.raw.pacman_beginning);
-        eat_ghost_music = MediaPlayer.create(MainActivity.this, R.raw.pacman_eatghost);
-        eat_fruit_music = MediaPlayer.create(MainActivity.this, R.raw.pacman_eatfruit);
+        music_beginning = MediaPlayer.create(Activity_panel.this, R.raw.pacman_beginning);
+        eat_ghost_music = MediaPlayer.create(Activity_panel.this, R.raw.pacman_eatghost);
+        eat_fruit_music = MediaPlayer.create(Activity_panel.this, R.raw.pacman_eatfruit);
         animation = new AlphaAnimation(1, 0); //to change visibility from visible to invisible
+        mToastToShow = Toast.makeText(this, "Yummy", Toast.LENGTH_SHORT);
 
         music_beginning.start();
         numRoads= route[0].length;
@@ -106,31 +108,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runLogic() {
-//        for (int i = values.length-1; i >0 ; i--) {
-//            for (int j = values[i].length-1; j >-1 ; j--) {
-//                values[i][j]=values[i-1][j];
-//            }
-//
-//        }
-
                 for (int i = values.length - 1; i > 0; i--) {
             System.arraycopy(values[i - 1], 0, values[i], 0, values[i].length - 1 + 1);
         }
         Arrays.fill(values[0],0);
-//            values[0][0]=0;
-//            values[0][1]=0;
-//            values[0][2]=0;
         }
-//    private void updateUIRow(int index){
-//        for (int i=0;i<values[index].length;index++)
-//        {
-//            ImageView im = route[i][j];
-//            if (values[i][j] == 0)
-//                im.setVisibility(View.INVISIBLE);
-//            else if (values[i][j] == 1)
-//                im.setVisibility(View.VISIBLE);
-//        }
-//    }
+
 
     private void updateUI() {
         for (int i = 0; i < values.length; i++) {
@@ -181,22 +164,6 @@ public class MainActivity extends AppCompatActivity {
                 mainCharacter[playerPosition].setVisibility(View.VISIBLE);
             }
             animation.cancel();
-
-            //            for (int i=1;i<numRoads;i++)
-//            {
-//                if (mainCharacter[i].getVisibility() == View.VISIBLE) {
-//                    mainCharacter[i].setVisibility(View.INVISIBLE);
-//                    mainCharacter[i - 1].setVisibility(View.VISIBLE);
-//                }
-//            }
-//            if (mainCharacter[1].getVisibility() == View.VISIBLE) {
-//                mainCharacter[1].setVisibility(View.INVISIBLE);
-//                mainCharacter[0].setVisibility(View.VISIBLE);
-//            }
-//            else if (mainCharacter[2].getVisibility() == View.VISIBLE) {
-//                mainCharacter[2].setVisibility(View.INVISIBLE);
-//                mainCharacter[1].setVisibility(View.VISIBLE);
-//            }
         });
 
         panel_IMG_right_arrow.setOnClickListener(v -> {
@@ -206,24 +173,9 @@ public class MainActivity extends AppCompatActivity {
                 mainCharacter[playerPosition].setVisibility(View.VISIBLE);
             }
             animation.cancel();
-
-            //            for (int i=0;i<numRoads-1;i++)
-//            {
-//                if (mainCharacter[i].getVisibility() == View.VISIBLE) {
-//                    mainCharacter[i].setVisibility(View.INVISIBLE);
-//                    mainCharacter[i + 1].setVisibility(View.VISIBLE);
-//                }
-//            }
-//            if (mainCharacter[1].getVisibility() == View.VISIBLE) {
-//                mainCharacter[1].setVisibility(View.INVISIBLE);
-//                mainCharacter[2].setVisibility(View.VISIBLE);
-//            }
-//            else if (mainCharacter[0].getVisibility() == View.VISIBLE) {
-//                mainCharacter[0].setVisibility(View.INVISIBLE);
-//                mainCharacter[1].setVisibility(View.VISIBLE);
-//            }
         });
     }
+
     private void checkCrash() {
         for (int i = 0; i < numRoads; i++) {
             if (values[values.length-1][i]==2 && mainCharacter[i].getVisibility()==View.VISIBLE
@@ -232,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 lives[numLives - 1].setVisibility(View.INVISIBLE);
                 eat_ghost_music.start();
                 numLives--;
-
+                mToastToShow.cancel();
                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 // Vibrate for 500 milliseconds
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -249,9 +201,10 @@ public class MainActivity extends AppCompatActivity {
                 mainCharacter[i].startAnimation(animation); //to start animation
 
                 if (numLives==0) {
-                    Intent gameOverScreen = new Intent(this, gameOverPanel.class);
+                    Intent gameOverScreen = new Intent(this, Game_over_panel.class);
                     startActivity(gameOverScreen);
                     stopTicker();
+                    mToastToShow.cancel();
                     finish();
                     }
                 }
@@ -260,13 +213,10 @@ public class MainActivity extends AppCompatActivity {
                 eat_fruit_music.start();
                 score+=10;
                 panel_LBL_score.setText(String.valueOf(score));
-                Toast.makeText(this, "Yummy", Toast.LENGTH_SHORT).show();
+                mToastToShow.show();
             }
             }
         }
-
-
-
 
 
     private void findViews() {
