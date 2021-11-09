@@ -10,7 +10,12 @@ import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -29,8 +34,10 @@ public class MainActivity extends AppCompatActivity {
     private int [][] values;
     private ImageView [] mainCharacter, lives;
     private ImageView  panel_IMG_left_arrow, panel_IMG_right_arrow;
-    private int numLives, numRoads, playerPosition;
-    private MediaPlayer music;
+    private int numLives, numRoads, playerPosition, score;
+    private TextView panel_LBL_score;
+    private MediaPlayer music_beginning, eat_fruit_music, eat_ghost_music;
+    private Animation animation;
     Timer timer;
 
     @Override
@@ -40,12 +47,17 @@ public class MainActivity extends AppCompatActivity {
 
         findViews();
         timer = new Timer();
-        music = MediaPlayer.create(MainActivity.this, R.raw.pacman_beginning);
-        music.start();
+        music_beginning = MediaPlayer.create(MainActivity.this, R.raw.pacman_beginning);
+        eat_ghost_music = MediaPlayer.create(MainActivity.this, R.raw.pacman_eatghost);
+        eat_fruit_music = MediaPlayer.create(MainActivity.this, R.raw.pacman_eatfruit);
+        animation = new AlphaAnimation(1, 0); //to change visibility from visible to invisible
+
+        music_beginning.start();
         numRoads= route[0].length;
         values = new int[route.length][route[0].length];
         newMonster = true;
         playerPosition=1;
+        score=0;
         numLives=lives.length;
         initializationArray();
         movingMainCharacter();
@@ -88,11 +100,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopTicker() {
         timer.cancel();
-        music.stop();
+        music_beginning.stop();
+        eat_fruit_music.stop();
+        eat_ghost_music.stop();
     }
 
     private void runLogic() {
-        for (int i = values.length - 1; i > 0; i--) {
+//        for (int i = values.length-1; i >0 ; i--) {
+//            for (int j = values[i].length-1; j >-1 ; j--) {
+//                values[i][j]=values[i-1][j];
+//            }
+//
+//        }
+
+                for (int i = values.length - 1; i > 0; i--) {
             System.arraycopy(values[i - 1], 0, values[i], 0, values[i].length - 1 + 1);
         }
         Arrays.fill(values[0],0);
@@ -117,25 +138,40 @@ public class MainActivity extends AppCompatActivity {
                 ImageView im = route[i][j];
                 if (values[i][j] == 0)
                     im.setVisibility(View.INVISIBLE);
-                else if (values[i][j] == 1)
+                    //cherry
+                else if (values[i][j] == 1) {
                     im.setVisibility(View.VISIBLE);
-//                    im.setImageResource(R.drawable.cherry);
+                    im.setImageResource(characters[0]);
+                    //monster1
+                } else if (values[i][j] == 2) {
+                    im.setVisibility(View.VISIBLE);
+                    im.setImageResource(characters[1]);
+                    //monster2
+                } else if (values[i][j] == 3) {
+                    im.setVisibility(View.VISIBLE);
+                    im.setImageResource(characters[2]);
+                    //monster3
+                } else if (values[i][j] == 4) {
+                    im.setVisibility(View.VISIBLE);
+                    im.setImageResource(characters[3]);
+                }
             }
         }
     }
 
-    //random number
-    private void randNumber() {
-        int randomNum;
-        
-        if (newMonster) {
-            randomNum = new Random().nextInt(3);
-            values[0][randomNum] = 1;
-            newMonster=false;
+        //random number
+        private void randNumber () {
+            int randomNum, type;
+            type = new Random().nextInt(characters.length+1);
+            if (type == 0)
+                type++;
+            if (newMonster) {
+                randomNum = new Random().nextInt(3);
+                values[0][randomNum] = type;
+                newMonster = false;
+            } else
+                newMonster = true;
         }
-        else
-            newMonster=true;
-    }
 
     private void movingMainCharacter() {
         panel_IMG_left_arrow.setOnClickListener(v -> {
@@ -144,6 +180,8 @@ public class MainActivity extends AppCompatActivity {
                 playerPosition--;
                 mainCharacter[playerPosition].setVisibility(View.VISIBLE);
             }
+            animation.cancel();
+
             //            for (int i=1;i<numRoads;i++)
 //            {
 //                if (mainCharacter[i].getVisibility() == View.VISIBLE) {
@@ -167,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 playerPosition++;
                 mainCharacter[playerPosition].setVisibility(View.VISIBLE);
             }
+            animation.cancel();
 
             //            for (int i=0;i<numRoads-1;i++)
 //            {
@@ -187,10 +226,11 @@ public class MainActivity extends AppCompatActivity {
     }
     private void checkCrash() {
         for (int i = 0; i < numRoads; i++) {
-            if (values[values.length-1][i]==1 && mainCharacter[i].getVisibility()==View.VISIBLE) {
+            if (values[values.length-1][i]==2 && mainCharacter[i].getVisibility()==View.VISIBLE
+            || values[values.length-1][i]==3 && mainCharacter[i].getVisibility()==View.VISIBLE
+            || values[values.length-1][i]==4 && mainCharacter[i].getVisibility()==View.VISIBLE) {
                 lives[numLives - 1].setVisibility(View.INVISIBLE);
-                MediaPlayer music = MediaPlayer.create(MainActivity.this, R.raw.pacman_eatghost);
-                music.start();
+                eat_ghost_music.start();
                 numLives--;
 
                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -201,6 +241,13 @@ public class MainActivity extends AppCompatActivity {
                     //deprecated in API 26
                     v.vibrate(500);
                 }
+
+                animation.setDuration(500); //1 second duration for each animation cycle
+                animation.setInterpolator(new LinearInterpolator());
+                animation.setRepeatCount(Animation.INFINITE); //repeating indefinitely
+                animation.setRepeatMode(Animation.REVERSE); //animation will start from end point once ended.
+                mainCharacter[i].startAnimation(animation); //to start animation
+
                 if (numLives==0) {
                     Intent gameOverScreen = new Intent(this, gameOverPanel.class);
                     startActivity(gameOverScreen);
@@ -208,6 +255,13 @@ public class MainActivity extends AppCompatActivity {
                     finish();
                     }
                 }
+
+            if (values[values.length-1][i]==1 && mainCharacter[i].getVisibility()==View.VISIBLE) {
+                eat_fruit_music.start();
+                score+=10;
+                panel_LBL_score.setText(String.valueOf(score));
+                Toast.makeText(this, "Yummy", Toast.LENGTH_SHORT).show();
+            }
             }
         }
 
@@ -235,6 +289,8 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.panel_IMG_heart1), findViewById(R.id.panel_IMG_heart2), findViewById(R.id.panel_IMG_heart3)};
 
         characters = new int[]{R.drawable.cherry, R.drawable.monster1, R.drawable.monster2, R.drawable.monster3};
+
+        panel_LBL_score = findViewById(R.id.panel_LBL_score);
 
         Glide
                 .with(this)
