@@ -91,7 +91,6 @@ public class Activity_panel extends AppCompatActivity {
                 });
             }
         }, 0, DELAY);
-
     }
 
     @Override
@@ -102,6 +101,12 @@ public class Activity_panel extends AppCompatActivity {
 
     private void stopTicker() {
         timer.cancel();
+        music_beginning.pause();
+        eat_fruit_music.pause();
+        eat_ghost_music.pause();
+    }
+
+    private void stopMusic () {
         music_beginning.stop();
         eat_fruit_music.stop();
         eat_ghost_music.stop();
@@ -204,6 +209,7 @@ public class Activity_panel extends AppCompatActivity {
                     Intent gameOverScreen = new Intent(this, Game_over_panel.class);
                     startActivity(gameOverScreen);
                     stopTicker();
+                    stopMusic();
                     mToastToShow.cancel();
                     finish();
                     }

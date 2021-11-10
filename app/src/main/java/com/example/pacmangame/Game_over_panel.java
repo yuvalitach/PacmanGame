@@ -12,16 +12,17 @@ import com.bumptech.glide.Glide;
 public class Game_over_panel extends AppCompatActivity {
 
     private ImageView gameOverPanel_IMG_replay;
-
+    private MediaPlayer music;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_over);
 
-        MediaPlayer music = MediaPlayer.create(this, R.raw.pacman_death);
+        music = MediaPlayer.create(this, R.raw.pacman_death);
         music.start();
 
         findView();
+
 
         gameOverPanel_IMG_replay.setOnClickListener(v -> {
             Intent MainActivity = new Intent(this, Activity_panel.class);
@@ -30,6 +31,17 @@ public class Game_over_panel extends AppCompatActivity {
             finish();
         });
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopTicker();
+    }
+
+    private void stopTicker() {
+        music.pause();
+    }
+
 
     private void findView() {
         gameOverPanel_IMG_replay=findViewById(R.id.gameOverPanel_IMG_replay);
