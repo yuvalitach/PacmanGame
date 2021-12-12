@@ -1,9 +1,17 @@
 package com.example.pacmangame;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,28 +26,44 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.pacmangame.objects.MyDB;
+import com.example.pacmangame.objects.Record;
+import com.google.gson.Gson;
 
-import java.util.Arrays;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Activity_panel extends AppCompatActivity {
-
-    final int DELAY = 500;
+    public static final String NAME = "NAME";
 
     private ImageView[][] route;
-    private boolean newMonster;
     private int[] characters;
-    private int [][] values;
-    private ImageView [] mainCharacter, lives;
-    private ImageView  panel_IMG_left_arrow, panel_IMG_right_arrow;
+    private LogicGame logics;
+    private ImageView[] mainCharacter, lives;
+    private ImageView panel_IMG_left_arrow, panel_IMG_right_arrow;
     private int numLives, numRoads, playerPosition, score;
     private TextView panel_LBL_score;
     private MediaPlayer music_beginning, eat_fruit_music, eat_ghost_music;
     private Animation animation;
     private Toast mToastToShow;
+    private Intent gameOverScreen;
+    private float sensorPosition;
+    private String playerName;
+    private final MyDB myDB = MyDB.initMyDB();
+    private Sensors sensors;
+    private LocationManager locationManager;
     Timer timer;
+
+    //sensors
+    public static final String SENSOR_TYPE = "SENSOR_TYPE";
+    private int sensorType;
+
+    //speed
+    public static final String SPEED = "SPEED";
+    private int speed;
+    private int delay;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +71,18 @@ public class Activity_panel extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         findViews();
+        getDataFromLogin();
+        if (sensorType == 1) {
+            sensors = new Sensors();
+            initSensors();
+        }
+        else
+            movingMainCharacter();
+        if (speed == 1)
+            delay = 250;
+        else
+            delay = 500;
+
         timer = new Timer();
         music_beginning = MediaPlayer.create(Activity_panel.this, R.raw.pacman_beginning);
         eat_ghost_music = MediaPlayer.create(Activity_panel.this, R.raw.pacman_eatghost);
@@ -55,19 +91,51 @@ public class Activity_panel extends AppCompatActivity {
         mToastToShow = Toast.makeText(this, "Yummy", Toast.LENGTH_SHORT);
 
         music_beginning.start();
-        numRoads= route[0].length;
-        values = new int[route.length][route[0].length];
-        newMonster = true;
-        playerPosition=1;
-        score=0;
-        numLives=lives.length;
-        initializationArray();
-        movingMainCharacter();
+        numRoads = route[0].length;
+        logics = new LogicGame(route.length, route[0].length);
+        playerPosition = 2;
+        score = 0;
+        numLives = lives.length;
+
+        //----- Get Location use permission and check -----
+        try {
+            if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        locationManager = new LocationManager(this);
 
     }
 
-    private void initializationArray() {
-        for (int[] value : values) Arrays.fill(value, 0);
+    private void initSensors() {
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensors.setSensorManager(sensorManager);
+        sensors.initSensor();
+    }
+
+
+    private final SensorEventListener accSensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            sensorPosition = event.values[0];
+            movingCharacterBySensor();
+            panel_IMG_left_arrow.setVisibility(View.INVISIBLE);
+            panel_IMG_right_arrow.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
+
+    private void getDataFromLogin() {
+        Bundle bundle = getIntent().getExtras();
+        sensorType = bundle.getInt(SENSOR_TYPE);
+        playerName = bundle.getString(NAME);
+        speed = bundle.getInt(SPEED);
     }
 
 
@@ -84,13 +152,14 @@ public class Activity_panel extends AppCompatActivity {
             @Override
             public void run() {
                 runOnUiThread(() -> {
-                    runLogic();
-                    randNumber();
+                    logics.runLogic();
+//                    runLogic();
+                    logics.randNumber(characters.length, mainCharacter.length);
                     updateUI();
                     checkCrash();
                 });
             }
-        }, 0, DELAY);
+        }, 0, delay);
     }
 
     @Override
@@ -106,40 +175,32 @@ public class Activity_panel extends AppCompatActivity {
         eat_ghost_music.pause();
     }
 
-    private void stopMusic () {
+    private void stopMusic() {
         music_beginning.stop();
         eat_fruit_music.stop();
         eat_ghost_music.stop();
     }
 
-    private void runLogic() {
-                for (int i = values.length - 1; i > 0; i--) {
-            System.arraycopy(values[i - 1], 0, values[i], 0, values[i].length - 1 + 1);
-        }
-        Arrays.fill(values[0],0);
-        }
-
-
     private void updateUI() {
-        for (int i = 0; i < values.length; i++) {
-            for (int j = 0; j < values[i].length; j++) {
+        for (int i = 0; i < logics.getValues().length; i++) {
+            for (int j = 0; j < logics.getValues()[i].length; j++) {
                 ImageView im = route[i][j];
-                if (values[i][j] == 0)
+                if (logics.getValues()[i][j] == 0)
                     im.setVisibility(View.INVISIBLE);
                     //cherry
-                else if (values[i][j] == 1) {
+                else if (logics.getValues()[i][j] == 1) {
                     im.setVisibility(View.VISIBLE);
                     im.setImageResource(characters[0]);
                     //monster1
-                } else if (values[i][j] == 2) {
+                } else if (logics.getValues()[i][j] == 2) {
                     im.setVisibility(View.VISIBLE);
                     im.setImageResource(characters[1]);
                     //monster2
-                } else if (values[i][j] == 3) {
+                } else if (logics.getValues()[i][j] == 3) {
                     im.setVisibility(View.VISIBLE);
                     im.setImageResource(characters[2]);
                     //monster3
-                } else if (values[i][j] == 4) {
+                } else if (logics.getValues()[i][j] == 4) {
                     im.setVisibility(View.VISIBLE);
                     im.setImageResource(characters[3]);
                 }
@@ -147,45 +208,51 @@ public class Activity_panel extends AppCompatActivity {
         }
     }
 
-        //random number
-        private void randNumber () {
-            int randomNum, type;
-            type = new Random().nextInt(characters.length+1);
-            if (type == 0)
-                type++;
-            if (newMonster) {
-                randomNum = new Random().nextInt(3);
-                values[0][randomNum] = type;
-                newMonster = false;
-            } else
-                newMonster = true;
+
+    private void movingCharacterBySensor() {
+            if (sensorPosition < -3 && playerPosition != numRoads - 1) {
+            moveRight();
+            animation.cancel();
+        } else if (sensorPosition > 1 && sensorPosition < 3 && playerPosition != 0) {
+            moveLeft();
+            animation.cancel();
+        } else if (sensorPosition > 3 && playerPosition != 0) {
+            moveLeft();
+            animation.cancel();
         }
+    }
 
     private void movingMainCharacter() {
         panel_IMG_left_arrow.setOnClickListener(v -> {
-            if(playerPosition!=0) {
-                mainCharacter[playerPosition].setVisibility(View.INVISIBLE);
-                playerPosition--;
-                mainCharacter[playerPosition].setVisibility(View.VISIBLE);
-            }
+            if (playerPosition != 0)
+                moveLeft();
             animation.cancel();
         });
 
         panel_IMG_right_arrow.setOnClickListener(v -> {
-            if(playerPosition!=numRoads-1) {
-                mainCharacter[playerPosition].setVisibility(View.INVISIBLE);
-                playerPosition++;
-                mainCharacter[playerPosition].setVisibility(View.VISIBLE);
-            }
+            if (playerPosition != numRoads - 1)
+                moveRight();
             animation.cancel();
         });
     }
 
+    public void moveLeft() {
+        mainCharacter[playerPosition].setVisibility(View.INVISIBLE);
+        playerPosition--;
+        mainCharacter[playerPosition].setVisibility(View.VISIBLE);
+    }
+
+    public void moveRight() {
+        mainCharacter[playerPosition].setVisibility(View.INVISIBLE);
+        playerPosition++;
+        mainCharacter[playerPosition].setVisibility(View.VISIBLE);
+    }
+
     private void checkCrash() {
         for (int i = 0; i < numRoads; i++) {
-            if (values[values.length-1][i]==2 && mainCharacter[i].getVisibility()==View.VISIBLE
-            || values[values.length-1][i]==3 && mainCharacter[i].getVisibility()==View.VISIBLE
-            || values[values.length-1][i]==4 && mainCharacter[i].getVisibility()==View.VISIBLE) {
+            if (logics.getValues()[logics.getValues().length - 1][i] == 2 && mainCharacter[i].getVisibility() == View.VISIBLE
+                    || logics.getValues()[logics.getValues().length - 1][i] == 3 && mainCharacter[i].getVisibility() == View.VISIBLE
+                    || logics.getValues()[logics.getValues().length - 1][i] == 4 && mainCharacter[i].getVisibility() == View.VISIBLE) {
                 lives[numLives - 1].setVisibility(View.INVISIBLE);
                 eat_ghost_music.start();
                 numLives--;
@@ -205,41 +272,48 @@ public class Activity_panel extends AppCompatActivity {
                 animation.setRepeatMode(Animation.REVERSE); //animation will start from end point once ended.
                 mainCharacter[i].startAnimation(animation); //to start animation
 
-                if (numLives==0) {
-                    Intent gameOverScreen = new Intent(this, Game_over_panel.class);
+                if (numLives == 0) {
+                    Record winner = new Record().setName(playerName).setScore(score).setLon(locationManager.getLon()).setLat(locationManager.getLat());
+                    myDB.addRecord(winner);
+
+                    String json = new Gson().toJson(myDB);
+                    MSPV3.getMe().putString("MY_DB", json);
+
                     startActivity(gameOverScreen);
                     stopTicker();
                     stopMusic();
                     mToastToShow.cancel();
                     finish();
-                    }
                 }
+            }
 
-            if (values[values.length-1][i]==1 && mainCharacter[i].getVisibility()==View.VISIBLE) {
+            if (logics.getValues()[logics.getValues().length - 1][i] == 1 && mainCharacter[i].getVisibility() == View.VISIBLE) {
                 eat_fruit_music.start();
-                score+=10;
+                score += 10;
                 panel_LBL_score.setText(String.valueOf(score));
                 mToastToShow.show();
             }
-            }
         }
+    }
 
 
     private void findViews() {
         ImageView panel_IMG_background;
         mainCharacter = new ImageView[]{
-                findViewById(R.id.panel_IMG_pacman_left), findViewById(R.id.panel_IMG_pacman_center), findViewById(R.id.panel_IMG_pacman_right)};
+                findViewById(R.id.panel_IMG_pacman_0), findViewById(R.id.panel_IMG_pacman_1), findViewById(R.id.panel_IMG_pacman_2),
+                findViewById(R.id.panel_IMG_pacman_3), findViewById(R.id.panel_IMG_pacman_4)};
 
         route = new ImageView[][]{
-                {findViewById(R.id.panel_IMG_monster00), findViewById(R.id.panel_IMG_monster01), findViewById(R.id.panel_IMG_monster02)},
-                {findViewById(R.id.panel_IMG_monster10), findViewById(R.id.panel_IMG_monster11), findViewById(R.id.panel_IMG_monster12)},
-                {findViewById(R.id.panel_IMG_monster20), findViewById(R.id.panel_IMG_monster21), findViewById(R.id.panel_IMG_monster22)},
-                {findViewById(R.id.panel_IMG_monster30), findViewById(R.id.panel_IMG_monster31), findViewById(R.id.panel_IMG_monster32)}};
+                {findViewById(R.id.panel_IMG_monster00), findViewById(R.id.panel_IMG_monster01), findViewById(R.id.panel_IMG_monster02), findViewById(R.id.panel_IMG_monster03), findViewById(R.id.panel_IMG_monster04),},
+                {findViewById(R.id.panel_IMG_monster10), findViewById(R.id.panel_IMG_monster11), findViewById(R.id.panel_IMG_monster12), findViewById(R.id.panel_IMG_monster13), findViewById(R.id.panel_IMG_monster14),},
+                {findViewById(R.id.panel_IMG_monster20), findViewById(R.id.panel_IMG_monster21), findViewById(R.id.panel_IMG_monster22), findViewById(R.id.panel_IMG_monster23), findViewById(R.id.panel_IMG_monster24),},
+                {findViewById(R.id.panel_IMG_monster30), findViewById(R.id.panel_IMG_monster31), findViewById(R.id.panel_IMG_monster32), findViewById(R.id.panel_IMG_monster33), findViewById(R.id.panel_IMG_monster34),},
+                {findViewById(R.id.panel_IMG_monster40), findViewById(R.id.panel_IMG_monster41), findViewById(R.id.panel_IMG_monster42), findViewById(R.id.panel_IMG_monster43), findViewById(R.id.panel_IMG_monster44),},};
 
         panel_IMG_left_arrow = findViewById(R.id.panel_IMG_left_arrow);
         panel_IMG_right_arrow = findViewById(R.id.panel_IMG_right_arrow);
 
-        panel_IMG_background=findViewById(R.id.panel_IMG_background);
+        panel_IMG_background = findViewById(R.id.panel_IMG_background);
 
         lives = new ImageView[]{
                 findViewById(R.id.panel_IMG_heart1), findViewById(R.id.panel_IMG_heart2), findViewById(R.id.panel_IMG_heart3)};
@@ -248,12 +322,26 @@ public class Activity_panel extends AppCompatActivity {
 
         panel_LBL_score = findViewById(R.id.panel_LBL_score);
 
+        gameOverScreen = new Intent(this, Game_over_panel.class);
         Glide
                 .with(this)
                 .load(R.drawable.three_lanes)
                 .centerCrop()
                 .into(panel_IMG_background);
+    }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (sensorType == 1)
+            sensors.getSensorManager().registerListener(accSensorEventListener, sensors.getAccSensor(), SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (sensorType == 1)
+            sensors.getSensorManager().unregisterListener(accSensorEventListener);
     }
 }

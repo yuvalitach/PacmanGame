@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/panel_IMG_background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:src="@drawable/temp" />
+
+
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:id="@+id/list_linear"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/frame1_BTN_winner10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:gravity="left"
+            android:textAlignment="gravity"
+            app:icon="@drawable/trophy"
+            app:iconSize="40dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/white"
+            android:visibility="invisible"/>
+    </LinearLayout>
+    </ScrollView>
+
+
+<!--</RelativeLayout>-->
+
+<!--<RelativeLayout-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    tools:context=".Top_ten_panel"-->
+<!--    android:background="#00E394"-->
+<!--    android:layout_margin="16dp">-->
+
+
+<!--    <com.google.android.material.textview.MaterialTextView-->
+<!--        android:id="@+id/frame1_LBL_title"-->
+<!--        android:layout_width="120dp"-->
+<!--        android:layout_height="60dp"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginStart="16dp"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        android:layout_marginBottom="16dp"-->
+<!--        android:autoSizeTextType="uniform"-->
+<!--        android:gravity="center"-->
+<!--        android:maxLines="1"-->
+<!--        android:text="Hello World!"-->
+<!--        android:textColor="#FF2EDD" />-->
+
+<!--    <com.google.android.material.textfield.TextInputLayout-->
+<!--        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"-->
+<!--        android:id="@+id/frame1_EDT_name"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/frame1_LBL_title"-->
+<!--        android:hint="Name"-->
+<!--        android:padding="16dp"-->
+<!--        >-->
+
+<!--        <com.google.android.material.textfield.TextInputEditText-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:ems="30"-->
+<!--            android:imeOptions="actionDone" />-->
+
+<!--    </com.google.android.material.textfield.TextInputLayout>-->
+
+<!--    <com.google.android.material.button.MaterialButton-->
+<!--        android:id="@+id/frame1_BTN_refresh"-->
+<!--        style="@style/Widget.MaterialComponents.Button.OutlinedButton"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/frame1_EDT_name"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginTop="12dp"-->
+
+<!--        android:text="Refresh"-->
+<!--        app:cornerRadius="50dp"-->
+<!--        app:strokeColor="@color/purple_500" />-->
+
+
+
+</RelativeLayout>

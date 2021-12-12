@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PacmanGame</string>
+    <string name="play" />
 </resources>
